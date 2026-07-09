@@ -1,0 +1,34 @@
+{
+  "name": "cliary",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "ts-node src/index.ts",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hantheemp/cliary.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hantheemp/cliary/issues"
+  },
+  "homepage": "https://github.com/hantheemp/cliary#readme",
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "ts-node": "^10.9.2"
+  },
+  "dependencies": {
+    "commander": "^15.0.0",
+    "typescript": "^6.0.3"
+  },
+  "bin": {
+    "cliary": "./dist/index.js"
+  },
+  "type": "module"
+}

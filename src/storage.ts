@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import crypto from "crypto";
+import { STORAGE_DIR } from "./constants.js";
 
 export interface Entry {
   uuid: string;
@@ -14,8 +15,6 @@ export interface File {
   title?: string;
   entries: Entry[];
 }
-
-const STORAGE_DIR = path.join(os.homedir(), ".cliary");
 
 export function initializeStorage(): void {
   if (!fs.existsSync(STORAGE_DIR)) {

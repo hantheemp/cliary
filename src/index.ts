@@ -2,10 +2,10 @@
 
 import { Command } from "commander";
 import { registerCommands } from "./commands.js";
-import { initializeStorage } from "./storage.js";
+import { initializeDatabase } from "./db/db.js";
 const program = new Command();
 
-initializeStorage();
+initializeDatabase();
 
 program.name("cliary").description("A simple CLI diary application").version("0.0.1");
 

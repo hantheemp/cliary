@@ -1,8 +1,7 @@
-import fs from "fs";
-import path from "path";
-import os from "os";
+import { eq } from "drizzle-orm";
 import crypto from "crypto";
-import { STORAGE_DIR } from "./constants.js";
+import { initializeDatabase } from "./db/db.js";
+import { days, entries as entriesTable } from "./db/schema.js";
 
 export interface Entry {
   uuid: string;
@@ -16,67 +15,68 @@ export interface File {
   entries: Entry[];
 }
 
-export function initializeStorage(): void {
-  if (!fs.existsSync(STORAGE_DIR)) {
-    fs.mkdirSync(STORAGE_DIR, { recursive: true });
-  }
+function db() {
+  return initializeDatabase();
 }
 
-function getDailyFilePath(date: string): string {
-  return path.join(STORAGE_DIR, `${date}.json`);
+function ensureDayExists(date: string): void {
+  db()
+    .insert(days)
+    .values({ date })
+    .onConflictDoNothing({ target: days.date })
+    .run();
 }
 
 export function getDayFile(date: string): File {
-  const filePath = getDailyFilePath(date);
+  const dayRow = db().select().from(days).where(eq(days.date, date)).get();
+  const entryRows = db()
+    .select()
+    .from(entriesTable)
+    .where(eq(entriesTable.dayDate, date))
+    .all();
 
-  if (!fs.existsSync(filePath)) {
-    return { date, entries: [] };
-  }
-
-  try {
-    const fileContent = fs.readFileSync(filePath, "utf-8");
-    return JSON.parse(fileContent) as File;
-  } catch (error: any) {
-    console.error(`Error reading day file for ${date}:`, error.message);
-    return { date, entries: [] };
-  }
-}
-
-function saveDayFile(dayFile: File): void {
-  const filePath = getDailyFilePath(dayFile.date);
-  fs.writeFileSync(filePath, JSON.stringify(dayFile, null, 2), "utf-8");
+  return {
+    date,
+    ...(dayRow?.title ? { title: dayRow.title } : {}),
+    entries: entryRows.map((r) => ({
+      uuid: r.uuid,
+      timestamp: r.timestamp,
+      content: r.content,
+    })),
+  };
 }
 
 export function saveEntry(content: string, title?: string): void {
   const today = getTodayDateString();
-  const dayFile = getDayFile(today);
+  ensureDayExists(today);
 
-  const newEntry: Entry = {
-    uuid: crypto.randomUUID(),
-    timestamp: new Date().toISOString(),
-    content: content.trim(),
-  };
+  db()
+    .insert(entriesTable)
+    .values({
+      dayDate: today,
+      uuid: crypto.randomUUID(),
+      timestamp: new Date().toISOString(),
+      content: content.trim(),
+    })
+    .run();
 
-  dayFile.entries.push(newEntry);
   if (title) {
-    dayFile.title = title.trim();
+    setTitle(today, title);
   }
-
-  saveDayFile(dayFile);
 }
 
 export function setTitle(date: string, title: string): void {
-  const dayFile = getDayFile(date);
-  dayFile.title = title.trim();
-  saveDayFile(dayFile);
+  ensureDayExists(date);
+  db()
+    .update(days)
+    .set({ title: title.trim() })
+    .where(eq(days.date, date))
+    .run();
 }
 
 export function getAllDates(): string[] {
-  const files = fs.readdirSync(STORAGE_DIR);
-  return files
-    .filter((file) => file.endsWith(".json"))
-    .map((file) => file.replace(".json", ""))
-    .sort();
+  const rows = db().select({ date: days.date }).from(days).all();
+  return rows.map((r) => r.date).sort();
 }
 
 export function getTodayDateString(): string {

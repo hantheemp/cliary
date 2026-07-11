@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, isNull } from "drizzle-orm";
 import crypto from "crypto";
 import { initializeDatabase } from "./db/db.js";
 import { days, entries as entriesTable } from "./db/schema.js";
@@ -12,6 +12,7 @@ export interface Entry {
 export interface File {
   date: string;
   title?: string;
+  correctedNarrative?: string;
   entries: Entry[];
 }
 
@@ -38,6 +39,9 @@ export function getDayFile(date: string): File {
   return {
     date,
     ...(dayRow?.title ? { title: dayRow.title } : {}),
+    ...(dayRow?.correctedNarrative
+      ? { correctedNarrative: dayRow.correctedNarrative }
+      : {}),
     entries: entryRows.map((r) => ({
       uuid: r.uuid,
       timestamp: r.timestamp,
@@ -74,9 +78,26 @@ export function setTitle(date: string, title: string): void {
     .run();
 }
 
+export function setCorrectedNarrative(date: string, narrative: string): void {
+  db()
+    .update(days)
+    .set({ correctedNarrative: narrative })
+    .where(eq(days.date, date))
+    .run();
+}
+
 export function getAllDates(): string[] {
   const rows = db().select({ date: days.date }).from(days).all();
   return rows.map((r) => r.date).sort();
+}
+
+export function getUncorrectedDates(): string[] {
+  const rows = db()
+    .select({ date: days.date })
+    .from(days)
+    .where(isNull(days.correctedNarrative))
+    .all();
+  return rows.map((r) => r.date);
 }
 
 export function getTodayDateString(): string {

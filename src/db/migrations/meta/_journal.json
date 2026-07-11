@@ -8,6 +8,27 @@
       "when": 1783789647722,
       "tag": "0000_worried_magus",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1783792911421,
+      "tag": "0001_wild_sentry",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1783793556907,
+      "tag": "0002_long_roxanne_simpson",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1783808526752,
+      "tag": "0003_certain_wolf_cub",
+      "breakpoints": true
     }
   ]
 }

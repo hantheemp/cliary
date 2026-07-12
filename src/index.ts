@@ -18,7 +18,8 @@ function buildProgram(): Command {
     .version("1.0.0");
   registerCommands(program);
 
-  program.exitOverride();
+ program.exitOverride();
+  program.commands.forEach((cmd) => cmd.exitOverride());
   return program;
 }
 

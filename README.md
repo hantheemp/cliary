@@ -50,6 +50,16 @@ Your local language model turns scattered notes into a natural journal entry whi
 
 ---
 
+## Requirements
+
+- **Node.js 22 LTS or newer** (CLIary uses native modules that are version-sensitive;
+  older or very new/experimental Node releases may not have prebuilt binaries available yet)
+- **npm** (comes bundled with Node.js)
+- (Optional, for the `correct` command) [Ollama](https://ollama.com) or any other
+  OpenAI-compatible local LLM server
+
+---
+
 ## Installation
 
 ```bash
@@ -161,13 +171,44 @@ You can switch between them whenever you like.
 
 ---
 
+## Troubleshooting
+
+### `Error: ... was compiled against a different Node.js version` or `Could not locate the bindings file`
+
+CLIary uses `better-sqlite3`, which relies on a native module that must match your exact Node.js
+version. If you see either of these errors, rebuild the native module against your current Node version:
+
+```bash
+npm rebuild better-sqlite3
+```
+
+If that doesn't help, do a clean reinstall:
+
+```bash
+rm -rf node_modules package-lock.json
+npm install
+npm run build
+npm link
+```
+
+If you recently switched Node.js versions (e.g. via `nvm`), make sure you re-run the steps above
+*after* switching — native modules built for one Node version will not load under another.
+
+### `cliary` command not found after `npm link`
+
+Make sure `npm run build` completed successfully and produced a `dist/index.js` file before running
+`npm link`. If you change the package `name` in `package.json`, run `npm unlink -g <old-name>` before
+linking again under the new name.
+
+---
+
 ## Built With
 
 - TypeScript
 - Commander.js
 - Better SQLite3
 - Drizzle ORM
-- OpenAI SDK
+- Native fetch (OpenAI-compatible API)
 - Ollama
 
 ---

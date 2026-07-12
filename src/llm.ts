@@ -2,9 +2,11 @@ import fs from "fs";
 import { PROMPT_PATH } from "./constants.js";
 import { DEFAULT_PROMPT } from "./DEFAULT_PROMPT.js";
 
-export function createPromptFile(): void {
-  fs.writeFileSync(PROMPT_PATH, DEFAULT_PROMPT, "utf-8");
-  console.log(`Prompt file created at ${PROMPT_PATH}`);
+export function ensurePromptFile(): void {
+  if (!fs.existsSync(PROMPT_PATH)) {
+    fs.writeFileSync(PROMPT_PATH, DEFAULT_PROMPT, "utf-8");
+    console.log(`Default prompt file created at ${PROMPT_PATH}`);
+  }
 }
 
 export function promptFile(): string {

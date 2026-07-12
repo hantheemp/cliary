@@ -5,10 +5,10 @@ import readline from "readline";
 import { registerCommands } from "./commands.js";
 import { initializeDatabase } from "./db/db.js";
 import { colors } from "./ui.js";
-import { createPromptFile } from "./llm.js";
+import { ensurePromptFile } from "./llm.js";
 
 initializeDatabase();
-createPromptFile();
+ensurePromptFile();
 
 function buildProgram(): Command {
   const program = new Command();

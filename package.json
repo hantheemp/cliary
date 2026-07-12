@@ -1,10 +1,10 @@
 {
   "name": "cliary",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "ts-node src/index.ts",
+    "dev": "ts-node-esm src/index.ts",
     "build": "tsc && node -e \"require('fs').cpSync('src/db/migrations','dist/db/migrations',{recursive:true})\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -23,13 +23,13 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^26.1.1",
     "drizzle-kit": "^0.31.10",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3"
   },
   "dependencies": {
     "better-sqlite3": "^12.11.1",
     "commander": "^15.0.0",
-    "drizzle-orm": "^0.45.2",
-    "typescript": "^6.0.3"
+    "drizzle-orm": "^0.45.2"
   },
   "bin": {
     "cliary": "./dist/index.js"

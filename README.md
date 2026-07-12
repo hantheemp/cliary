@@ -1,9 +1,9 @@
 # CLIary
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)
-![License](https://img.shields.io/badge/License-MIT-green)
 ![SQLite](https://img.shields.io/badge/SQLite-Database-003B57)
 ![Ollama](https://img.shields.io/badge/Local%20LLM-Ollama-black)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 > Privacy-first terminal journaling powered by local LLMs.
 

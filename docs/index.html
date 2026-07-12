@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>cliary: a local-first terminal journal</title>
+  <meta name="description"
+    content="cliary is an open-source terminal journal that merges scattered, timestamped notes into a single honest entry, using a language model that runs entirely on your machine.">
+  <link rel="canonical" href="https://hantheemp.github.io/cliary/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://hantheemp.github.io/cliary/">
+  <meta property="og:title" content="cliary: a local-first terminal journal">
+  <meta property="og:description"
+    content="Type fragments whenever something happens. cliary merges them into one honest daily entry using a local language model, and never sends a single word anywhere else.">
+  <meta property="og:image" content="https://hantheemp.github.io/cliary/assets/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="cliary: a local-first terminal journal">
+  <meta name="twitter:description"
+    content="Type fragments whenever something happens. cliary merges them into one honest daily entry using a local language model, and never sends a single word anywhere else.">
+  <meta name="twitter:image" content="https://hantheemp.github.io/cliary/assets/og-image.png">
+
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <main>
+    <section class="hero">
+      <div class="wrap">
+        <div class="brandmark"><span class="brand">cliary</span><span class="cursor" aria-hidden="true">_</span></div>
+        <h1>The terminal journal that runs entirely on your machine.</h1>
+        <p class="lede">
+          Type fragments whenever something happens. <span class="brand">cliary</span> merges them into one
+          honest daily entry using a local language model, and never sends a single word anywhere else.
+        </p>
+
+        <div class="demo-wrap">
+          <div class="terminal">
+            <div class="term-bar">
+              <div class="term-bar-left" aria-hidden="true"><span class="dot dot-red"></span><span
+                  class="dot dot-yellow"></span><span class="dot dot-green"></span></div>
+            </div>
+            <div class="term-body">
+              <div><span class="prompt">$</span> cliary add "finished the auth flow, felt good"</div>
+              <div class="out">[OK] Entry saved.</div>
+
+              <div><span class="prompt">$</span> cliary correct</div>
+              <div class="out">[INFO] Processing 1 day(s)...
+                [OK] Correction completed.</div>
+
+              <div><span class="prompt">$</span> cliary view</div>
+              <div class="out result"># 2026-07-12
+                I finished the auth flow today, it felt good.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cta-row">
+          <a class="btn-primary" href="https://github.com/hantheemp/cliary/releases" target="_blank" rel="noopener"
+            aria-label="Get started: view the latest cliary release on GitHub (opens in new tab)">Get Started &rarr;</a>
+          <a class="btn-secondary" href="https://github.com/hantheemp/cliary" target="_blank" rel="noopener"
+            aria-label="View cliary source code on GitHub (opens in new tab)">View source</a>
+        </div>
+
+        <div class="install-chip">
+          <code>git clone https://github.com/hantheemp/cliary.git &amp;&amp; cd cliary &amp;&amp; npm install &amp;&amp; npm run build &amp;&amp; npm link</code>
+          <button class="chip-copy" onclick="copyInstall(this)"
+            aria-label="Copy install commands to clipboard">copy</button>
+        </div>
+        <p class="req-inline-note">Requires Node.js 22 LTS or newer</p>
+      </div>
+    </section>
+
+    <section class="why">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">why cliary</span>
+          <h2>Most journaling tools expect you to sit down and write everything at once.</h2>
+        </div>
+        <ul class="scan-list">
+          <li>Capture a thought the moment it happens, in a terminal that's probably already open.</li>
+          <li>No formatting, no editing, no pressure to make it sound right while you type.</li>
+          <li>One command merges the day's notes into a coherent, corrected entry.</li>
+          <li>Your original notes are always kept, unedited, right alongside it.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="privacy">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">local-first, by design</span>
+          <h2>Nothing you write ever leaves your machine.</h2>
+        </div>
+        <div class="privacy-grid">
+          <div class="privacy-item"><span class="p-label">Local SQLite</span><span class="p-desc">Every entry lives in
+              one file on disk: <code>~/.cliary/cliary.db</code></span></div>
+          <div class="privacy-item"><span class="p-label">Local LLM</span><span class="p-desc">Correction runs through
+              Ollama or any OpenAI-compatible server on your own machine</span></div>
+          <div class="privacy-item"><span class="p-label">No cloud</span><span class="p-desc">Nothing is synced or
+              uploaded anywhere by cliary itself</span></div>
+          <div class="privacy-item"><span class="p-label">No account</span><span class="p-desc">Nothing to sign up for,
+              nothing to log into</span></div>
+          <div class="privacy-item"><span class="p-label">No telemetry</span><span class="p-desc">cliary doesn't phone
+              home, ever</span></div>
+        </div>
+        <p class="llm-optional">
+          The LLM is entirely optional. Every command works with no model configured;
+          only <code>cliary correct</code> needs one, and only when you choose to run it.
+        </p>
+      </div>
+    </section>
+
+    <section id="features">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">commands</span>
+          <h2>Everything <span class="brand">cliary</span> can do, in one place</h2>
+        </div>
+        <div class="help-block">
+          <div class="cmd-title">$ cliary --help</div>
+          <div class="usage">Usage: cliary &lt;command&gt; [options]</div>
+          <div class="help-row"><span class="flag">add [note]</span><span class="desc">Add a new journal entry</span>
+          </div>
+          <div class="help-row"><span class="flag">title &lt;title&gt;</span><span class="desc">Set the title for a date
+              (defaults to today)</span></div>
+          <div class="help-row"><span class="flag">list</span><span class="desc">List every date that has entries</span>
+          </div>
+          <div class="help-row"><span class="flag">view [--date]</span><span class="desc">Show the entries for a
+              date</span></div>
+          <div class="help-row"><span class="flag">correct [--date|--all]</span><span class="desc">Merge a day's entries
+              into one corrected entry (optional, needs a local LLM)</span></div>
+          <div class="help-row"><span class="flag">config --engine</span><span class="desc">Configure the LLM engine
+              (ollama, none)</span></div>
+          <div class="footnote"># run with no arguments for an interactive shell</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="demo">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">see it work</span>
+          <h2>Your typos included. That's the point.</h2>
+          <p>Three rushed, lowercase notes, typed exactly as you'd type them mid-day, become one clean entry.</p>
+        </div>
+        <div class="transform">
+          <div class="card">
+            <span class="card-label">what you typed</span>
+            <p class="raw-line"><span class="ts">[09:15]</span>went to the offise, there was some trafic today</p>
+            <p class="raw-line"><span class="ts">[13:00]</span>had lunch with my collegues, it was nise</p>
+            <p class="raw-line"><span class="ts">[19:30]</span>realy tired now, gonna sleep</p>
+          </div>
+          <div class="arrow" aria-hidden="true">&rarr;</div>
+          <div class="card">
+            <span class="card-label">cliary correct</span>
+            <p class="polished">
+              I went to the <mark>office</mark>, there was some <mark>traffic</mark> today.
+              I had lunch with my <mark>colleagues</mark>, it was <mark>nice</mark>.
+              I'm <mark>really</mark> tired now, going to sleep.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <div class="footer-links">
+        <a href="https://github.com/hantheemp/cliary" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/hantheemp/cliary/releases" target="_blank" rel="noopener">Releases</a>
+        <a href="https://github.com/hantheemp/cliary/issues" target="_blank" rel="noopener">Issues</a>
+        <a href="https://github.com/hantheemp/cliary/blob/main/LICENSE" target="_blank" rel="noopener">License (MIT)</a>
+      </div>
+      <p class="footer-note"><span class="brand">cliary</span> is open source. Contributions are welcome.</p>
+      <p class="footer-credit">Made by Murat Kağan Temel</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+
+</html>

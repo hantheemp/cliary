@@ -42,25 +42,27 @@ Your local language model turns scattered notes into a natural journal entry whi
 - Terminal-first journaling
 - Local LLM support through Ollama
 - Privacy-first. Your journal never leaves your machine.
-- SQLite storage with Drizzle ORM
+- SQLite storage via Node's built-in `node:sqlite` module and Kysely
 - Interactive shell mode
 - Fully customizable prompts
 - Original notes are always preserved
 - Works with OpenAI-compatible APIs
-
----
-
-## Requirements
-
-- **Node.js 22 LTS or newer** (CLIary uses native modules that are version-sensitive;
-  older or very new/experimental Node releases may not have prebuilt binaries available yet)
-- **npm** (comes bundled with Node.js)
-- (Optional, for the `correct` command) [Ollama](https://ollama.com) or any other
-  OpenAI-compatible local LLM server
+- Available as a single-file executable on Windows (no Node.js required)
 
 ---
 
 ## Installation
+
+### Option A: Standalone executable (Windows, no Node.js required)
+
+Download `cliary.exe` from the [latest release](https://github.com/hantheemp/cliary/releases/latest)
+and run it directly. Nothing else to install.
+
+```powershell
+.\cliary.exe add "my first note"
+```
+
+### Option B: From source (all platforms)
 
 ```bash
 git clone https://github.com/hantheemp/cliary.git
@@ -70,6 +72,20 @@ npm install
 npm run build
 npm link
 ```
+
+---
+
+## Requirements
+
+**For the standalone executable (Windows):** none. It's fully self-contained.
+
+**For installing from source:**
+- **Node.js 22.5 or newer** (Node 24 LTS recommended). CLIary uses Node's built-in
+  `node:sqlite` module, which may print an experimental-feature warning at startup —
+  this is expected and harmless.
+- **npm** (comes bundled with Node.js)
+- (Optional, for the `correct` command) [Ollama](https://ollama.com) or any other
+  OpenAI-compatible local LLM server
 
 ---
 
@@ -171,28 +187,20 @@ You can switch between them whenever you like.
 
 ---
 
+## Roadmap
+
+CLIary v0.3.0 is not a finish line. Planned next:
+
+- A test suite
+- Standalone executables for macOS and Linux (Windows is available today)
+- Encrypting journal entries at rest
+- Support for additional LLM providers, including cloud APIs with an API key
+
+Ideas, issues, and pull requests are welcome.
+
+---
+
 ## Troubleshooting
-
-### `Error: ... was compiled against a different Node.js version` or `Could not locate the bindings file`
-
-CLIary uses `better-sqlite3`, which relies on a native module that must match your exact Node.js
-version. If you see either of these errors, rebuild the native module against your current Node version:
-
-```bash
-npm rebuild better-sqlite3
-```
-
-If that doesn't help, do a clean reinstall:
-
-```bash
-rm -rf node_modules package-lock.json
-npm install
-npm run build
-npm link
-```
-
-If you recently switched Node.js versions (e.g. via `nvm`), make sure you re-run the steps above
-*after* switching — native modules built for one Node version will not load under another.
 
 ### `cliary` command not found after `npm link`
 
@@ -200,14 +208,18 @@ Make sure `npm run build` completed successfully and produced a `dist/index.js` 
 `npm link`. If you change the package `name` in `package.json`, run `npm unlink -g <old-name>` before
 linking again under the new name.
 
+### `ExperimentalWarning: SQLite is an experimental feature and might change at any time`
+
+This is expected. CLIary uses Node's built-in `node:sqlite` module, which Node itself still labels
+experimental. It does not affect functionality.
+
 ---
 
 ## Built With
 
 - TypeScript
 - Commander.js
-- Better SQLite3
-- Drizzle ORM
+- `node:sqlite` (Node.js built-in) + Kysely
 - Native fetch (OpenAI-compatible API)
 - Ollama
 

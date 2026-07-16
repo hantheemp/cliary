@@ -18,7 +18,7 @@ function buildProgram(): Command {
     .version("1.0.0");
   registerCommands(program);
 
- program.exitOverride();
+  program.exitOverride();
   program.commands.forEach((cmd) => cmd.exitOverride());
   return program;
 }
@@ -86,8 +86,12 @@ async function startInteractiveShell(): Promise<void> {
   });
 }
 
-if (process.argv.length <= 2) {
-  await startInteractiveShell();
-} else {
-  await runOnce(process.argv.slice(2));
+async function main(): Promise<void> {
+  if (process.argv.length <= 2) {
+    await startInteractiveShell();
+  } else {
+    await runOnce(process.argv.slice(2));
+  }
 }
+
+main();

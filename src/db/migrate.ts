@@ -1,10 +1,18 @@
-import fs from "fs";
-import path from "path";
-import type { DatabaseSync } from "node:sqlite";
+export interface MigrationFile {
+  name: string;
+  sql: string;
+}
+interface MinimalSqliteDatabase {
+  exec(sql: string): void;
+  prepare(sql: string): {
+    all(...params: unknown[]): unknown[];
+    run(...params: unknown[]): unknown;
+  };
+}
 
 export function runMigrations(
-  sqlite: DatabaseSync,
-  migrationsFolder: string,
+  sqlite: MinimalSqliteDatabase,
+  migrations: MigrationFile[],
 ): void {
   sqlite.exec(
     `CREATE TABLE IF NOT EXISTS _migrations (
@@ -20,20 +28,16 @@ export function runMigrations(
       .map((row) => (row as { name: string }).name),
   );
 
-  const files = fs
-    .readdirSync(migrationsFolder)
-    .filter((f) => f.endsWith(".sql"))
-    .sort();
+  const sorted = [...migrations].sort((a, b) => a.name.localeCompare(b.name));
 
-  for (const file of files) {
-    if (applied.has(file)) continue;
+  for (const migration of sorted) {
+    if (applied.has(migration.name)) continue;
 
-    const sql = fs.readFileSync(path.join(migrationsFolder, file), "utf-8");
-    sqlite.exec(sql);
+    sqlite.exec(migration.sql);
     sqlite
       .prepare("INSERT INTO _migrations (name, applied_at) VALUES (?, ?)")
-      .run(file, new Date().toISOString());
+      .run(migration.name, new Date().toISOString());
 
-    console.log(`Applied migration: ${file}`);
+    console.log(`Applied migration: ${migration.name}`);
   }
 }

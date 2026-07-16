@@ -4,3 +4,8 @@ dist/
 
 # IDE files
 .vscode/
+
+# Executable
+cliary.exe
+sea-bundle.cjs
+sea-prep.blob

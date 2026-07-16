@@ -1,3 +1,6 @@
+export const name = "0001_initial";
+
+export const sql = `
 CREATE TABLE IF NOT EXISTS days (
   date TEXT PRIMARY KEY,
   title TEXT,
@@ -16,3 +19,4 @@ CREATE TABLE IF NOT EXISTS settings (
   key TEXT PRIMARY KEY,
   value TEXT
 );
+`;

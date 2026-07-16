@@ -1,16 +1,12 @@
 import { DatabaseSync } from "node:sqlite";
 import { Kysely, SqliteDialect, CamelCasePlugin } from "kysely";
-import path from "path";
 import fs from "fs";
-import { fileURLToPath } from "url";
 import { DB_PATH, STORAGE_DIR } from "../constants.js";
 import { runMigrations } from "./migrate.js";
+import { migrations } from "./migrations/index.js";
 import type { DB } from "./schema.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
 let db: Kysely<DB> | null = null;
-
 function toSqliteDialectDatabase(sqlite: DatabaseSync) {
   return {
     prepare: (sql: string) => {
@@ -49,7 +45,7 @@ export function initializeDatabase(): Kysely<DB> {
   sqlite.exec("PRAGMA journal_mode = WAL");
   sqlite.exec("PRAGMA foreign_keys = ON");
 
-  runMigrations(sqlite, path.join(__dirname, "migrations"));
+  runMigrations(sqlite, migrations);
 
   db = new Kysely<DB>({
     dialect: new SqliteDialect({

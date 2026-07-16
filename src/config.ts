@@ -1,6 +1,4 @@
-import { eq } from "drizzle-orm";
 import { initializeDatabase } from "./db/db.js";
-import { settings } from "./db/schema.js";
 
 export interface EngineConfig {
   engine: "none" | "ollama";
@@ -12,25 +10,29 @@ function db() {
   return initializeDatabase();
 }
 
-export function getSetting(key: string): string | undefined {
-  const row = db().select().from(settings).where(eq(settings.key, key)).get();
+export async function getSetting(key: string): Promise<string | undefined> {
+  const row = await db()
+    .selectFrom("settings")
+    .selectAll()
+    .where("key", "=", key)
+    .executeTakeFirst();
   return row?.value ?? undefined;
 }
 
-export function setSetting(key: string, value: string): void {
-  db()
-    .insert(settings)
+export async function setSetting(key: string, value: string): Promise<void> {
+  await db()
+    .insertInto("settings")
     .values({ key, value })
-    .onConflictDoUpdate({ target: settings.key, set: { value } })
-    .run();
+    .onConflict((oc) => oc.column("key").doUpdateSet({ value }))
+    .execute();
 }
 
-export function getEngineConfig(): EngineConfig {
+export async function getEngineConfig(): Promise<EngineConfig> {
   const engine =
-    (getSetting("engine") as "none" | "ollama" | undefined) ?? "none";
+    ((await getSetting("engine")) as "none" | "ollama" | undefined) ?? "none";
   return {
     engine,
-    ollamaUrl: getSetting("ollama_url"),
-    ollamaModel: getSetting("ollama_model"),
+    ollamaUrl: await getSetting("ollama_url"),
+    ollamaModel: await getSetting("ollama_model"),
   };
 }

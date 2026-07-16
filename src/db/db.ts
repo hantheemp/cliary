@@ -1,20 +1,42 @@
-import Database from "better-sqlite3";
-import {
-  drizzle,
-  type BetterSQLite3Database,
-} from "drizzle-orm/better-sqlite3";
-import { migrate } from "drizzle-orm/better-sqlite3/migrator";
-import fs from "fs";
+import { DatabaseSync } from "node:sqlite";
+import { Kysely, SqliteDialect, CamelCasePlugin } from "kysely";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
 import { DB_PATH, STORAGE_DIR } from "../constants.js";
-import * as schema from "./schema.js";
+import { runMigrations } from "./migrate.js";
+import type { DB } from "./schema.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-let db: BetterSQLite3Database<typeof schema> | null = null;
+let db: Kysely<DB> | null = null;
 
-export function initializeDatabase(): BetterSQLite3Database<typeof schema> {
+function toSqliteDialectDatabase(sqlite: DatabaseSync) {
+  return {
+    prepare: (sql: string) => {
+      const stmt = sqlite.prepare(sql);
+      return {
+        all: (params: readonly unknown[]) =>
+          stmt.all(...((params ?? []) as any[])),
+        get: (params: readonly unknown[]) =>
+          stmt.get(...((params ?? []) as any[])),
+        run: (params: readonly unknown[]) => {
+          const info = stmt.run(...((params ?? []) as any[]));
+          return {
+            changes: info.changes,
+            lastInsertRowid: info.lastInsertRowid,
+          };
+        },
+        iterate: (params: readonly unknown[]) =>
+          stmt.iterate(...((params ?? []) as any[])),
+        reader: sql.trim().toLowerCase().startsWith("select"),
+      };
+    },
+    close: () => sqlite.close(),
+  };
+}
+
+export function initializeDatabase(): Kysely<DB> {
   if (db) {
     return db;
   }
@@ -23,13 +45,18 @@ export function initializeDatabase(): BetterSQLite3Database<typeof schema> {
     fs.mkdirSync(STORAGE_DIR, { recursive: true });
   }
 
-  const sqlite = new Database(DB_PATH);
-  sqlite.pragma("journal_mode = WAL");
-  sqlite.pragma("foreign_keys = ON");
+  const sqlite = new DatabaseSync(DB_PATH);
+  sqlite.exec("PRAGMA journal_mode = WAL");
+  sqlite.exec("PRAGMA foreign_keys = ON");
 
-  db = drizzle(sqlite, { schema });
+  runMigrations(sqlite, path.join(__dirname, "migrations"));
 
-  migrate(db, { migrationsFolder: path.join(__dirname, "migrations") });
+  db = new Kysely<DB>({
+    dialect: new SqliteDialect({
+      database: toSqliteDialectDatabase(sqlite),
+    }),
+    plugins: [new CamelCasePlugin()],
+  });
 
   return db;
 }

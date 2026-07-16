@@ -1,22 +1,25 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import type { Generated } from "kysely";
+export interface DaysTable {
+  date: string;
+  title: string | null;
+  correctedNarrative: string | null;
+}
 
-export const days = sqliteTable("days", {
-  date: text("date").primaryKey(),
-  title: text("title"),
-  correctedNarrative: text("corrected_narrative"),
-});
+export interface EntriesTable {
+  id: Generated<number>;
+  dayDate: string;
+  uuid: string;
+  timestamp: string;
+  content: string;
+}
 
-export const entries = sqliteTable("entries", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  dayDate: text("day_date")
-    .notNull()
-    .references(() => days.date),
-  uuid: text("uuid").notNull().unique(),
-  timestamp: text("timestamp").notNull(),
-  content: text("content").notNull(),
-});
+export interface SettingsTable {
+  key: string;
+  value: string | null;
+}
 
-export const settings = sqliteTable("settings", {
-  key: text("key").primaryKey(),
-  value: text("value"),
-});
+export interface DB {
+  days: DaysTable;
+  entries: EntriesTable;
+  settings: SettingsTable;
+}

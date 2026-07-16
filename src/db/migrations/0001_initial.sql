@@ -1,0 +1,18 @@
+CREATE TABLE IF NOT EXISTS days (
+  date TEXT PRIMARY KEY,
+  title TEXT,
+  corrected_narrative TEXT
+);
+
+CREATE TABLE IF NOT EXISTS entries (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  day_date TEXT NOT NULL REFERENCES days(date),
+  uuid TEXT NOT NULL UNIQUE,
+  timestamp TEXT NOT NULL,
+  content TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS settings (
+  key TEXT PRIMARY KEY,
+  value TEXT
+);

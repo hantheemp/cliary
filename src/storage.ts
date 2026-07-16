@@ -1,7 +1,5 @@
-import { eq, isNull } from "drizzle-orm";
 import crypto from "crypto";
 import { initializeDatabase } from "./db/db.js";
-import { days, entries as entriesTable } from "./db/schema.js";
 
 export interface Entry {
   uuid: string;
@@ -20,21 +18,25 @@ function db() {
   return initializeDatabase();
 }
 
-function ensureDayExists(date: string): void {
-  db()
-    .insert(days)
-    .values({ date })
-    .onConflictDoNothing({ target: days.date })
-    .run();
+async function ensureDayExists(date: string): Promise<void> {
+  await db()
+    .insertInto("days")
+    .values({ date, title: null, correctedNarrative: null })
+    .onConflict((oc) => oc.column("date").doNothing())
+    .execute();
 }
 
-export function getDayFile(date: string): File {
-  const dayRow = db().select().from(days).where(eq(days.date, date)).get();
-  const entryRows = db()
-    .select()
-    .from(entriesTable)
-    .where(eq(entriesTable.dayDate, date))
-    .all();
+export async function getDayFile(date: string): Promise<File> {
+  const dayRow = await db()
+    .selectFrom("days")
+    .selectAll()
+    .where("date", "=", date)
+    .executeTakeFirst();
+  const entryRows = await db()
+    .selectFrom("entries")
+    .selectAll()
+    .where("dayDate", "=", date)
+    .execute();
 
   return {
     date,
@@ -50,53 +52,59 @@ export function getDayFile(date: string): File {
   };
 }
 
-export function saveEntry(content: string, title?: string): void {
+export async function saveEntry(
+  content: string,
+  title?: string,
+): Promise<void> {
   const today = getTodayDateString();
-  ensureDayExists(today);
+  await ensureDayExists(today);
 
-  db()
-    .insert(entriesTable)
+  await db()
+    .insertInto("entries")
     .values({
       dayDate: today,
       uuid: crypto.randomUUID(),
       timestamp: new Date().toISOString(),
       content: content.trim(),
     })
-    .run();
+    .execute();
 
   if (title) {
-    setTitle(today, title);
+    await setTitle(today, title);
   }
 }
 
-export function setTitle(date: string, title: string): void {
-  ensureDayExists(date);
-  db()
-    .update(days)
+export async function setTitle(date: string, title: string): Promise<void> {
+  await ensureDayExists(date);
+  await db()
+    .updateTable("days")
     .set({ title: title.trim() })
-    .where(eq(days.date, date))
-    .run();
+    .where("date", "=", date)
+    .execute();
 }
 
-export function setCorrectedNarrative(date: string, narrative: string): void {
-  db()
-    .update(days)
+export async function setCorrectedNarrative(
+  date: string,
+  narrative: string,
+): Promise<void> {
+  await db()
+    .updateTable("days")
     .set({ correctedNarrative: narrative })
-    .where(eq(days.date, date))
-    .run();
+    .where("date", "=", date)
+    .execute();
 }
 
-export function getAllDates(): string[] {
-  const rows = db().select({ date: days.date }).from(days).all();
+export async function getAllDates(): Promise<string[]> {
+  const rows = await db().selectFrom("days").select("date").execute();
   return rows.map((r) => r.date).sort();
 }
 
-export function getUncorrectedDates(): string[] {
-  const rows = db()
-    .select({ date: days.date })
-    .from(days)
-    .where(isNull(days.correctedNarrative))
-    .all();
+export async function getUncorrectedDates(): Promise<string[]> {
+  const rows = await db()
+    .selectFrom("days")
+    .select("date")
+    .where("correctedNarrative", "is", null)
+    .execute();
   return rows.map((r) => r.date);
 }
 

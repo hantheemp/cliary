@@ -27,12 +27,12 @@ function add(program: Command): void {
     .description("Add a new journal entry.")
     .argument("[note]", "Entry content")
     .option("-t, --title <string>", "Also set today's title at the same time.")
-    .action((note: string | undefined, options: { title?: string }) => {
+    .action(async (note: string | undefined, options: { title?: string }) => {
       if (!note) {
         ui.warn("Entry content cannot be empty.");
         return;
       }
-      saveEntry(note, options.title);
+      await saveEntry(note, options.title);
       ui.success("Entry saved.");
     });
 }
@@ -43,9 +43,9 @@ function title(program: Command): void {
     .description("Set the title for a given date (defaults to today).")
     .argument("<title>", "Title text")
     .option("--date <string>", "Target date (YYYY-MM-DD). Defaults to today.")
-    .action((titleText: string, options: { date?: string }) => {
+    .action(async (titleText: string, options: { date?: string }) => {
       const targetDate = options.date ?? getTodayDateString();
-      setTitle(targetDate, titleText);
+      await setTitle(targetDate, titleText);
       ui.success(`Title saved for ${targetDate}: "${titleText}"`);
     });
 }
@@ -54,20 +54,20 @@ function list(program: Command): void {
   program
     .command("list")
     .description("List every date that has journal entries.")
-    .action(() => {
-      const dates = getAllDates();
+    .action(async () => {
+      const dates = await getAllDates();
       if (dates.length === 0) {
         ui.warn("No journal entries found.");
         return;
       }
       ui.heading(`${dates.length} day(s) recorded:`);
-      dates.forEach((date) => {
-        const dayFile = getDayFile(date);
+      for (const date of dates) {
+        const dayFile = await getDayFile(date);
         const suffix = dayFile.title
           ? ` - ${colors.magenta}${dayFile.title}${colors.reset}`
           : "";
         console.log(`  ${colors.green}*${colors.reset} ${date}${suffix}`);
-      });
+      }
     });
 }
 
@@ -80,9 +80,9 @@ function view(program: Command): void {
       "--raw",
       "Show the original, unmerged entries instead of the corrected narrative.",
     )
-    .action((options: { date?: string; raw?: boolean }) => {
+    .action(async (options: { date?: string; raw?: boolean }) => {
       const targetDate = options.date ?? getTodayDateString();
-      const dayFile = getDayFile(targetDate);
+      const dayFile = await getDayFile(targetDate);
 
       if (dayFile.entries.length === 0) {
         ui.warn(`No entries found for ${targetDate}.`);
@@ -130,16 +130,18 @@ function config(program: Command): void {
       "OpenAI-compatible base URL, e.g. http://localhost:11434/v1",
     )
     .option("--model <string>", "Model name, e.g. llama3")
-    .action((options: { engine: string; url?: string; model?: string }) => {
-      if (options.engine !== "none" && options.engine !== "ollama") {
-        ui.error("Invalid engine. Use 'none' or 'ollama'.");
-        return;
-      }
-      setSetting("engine", options.engine);
-      if (options.url) setSetting("ollama_url", options.url);
-      if (options.model) setSetting("ollama_model", options.model);
-      ui.success(`Configuration updated. Active engine: ${options.engine}`);
-    });
+    .action(
+      async (options: { engine: string; url?: string; model?: string }) => {
+        if (options.engine !== "none" && options.engine !== "ollama") {
+          ui.error("Invalid engine. Use 'none' or 'ollama'.");
+          return;
+        }
+        await setSetting("engine", options.engine);
+        if (options.url) await setSetting("ollama_url", options.url);
+        if (options.model) await setSetting("ollama_model", options.model);
+        ui.success(`Configuration updated. Active engine: ${options.engine}`);
+      },
+    );
 }
 
 function correct(program: Command): void {
@@ -178,7 +180,7 @@ function correct(program: Command): void {
           return;
         }
 
-        const stored = getEngineConfig();
+        const stored = await getEngineConfig();
         const url = options.url ?? stored.ollamaUrl;
         const model = options.model ?? stored.ollamaModel;
 
@@ -195,14 +197,14 @@ function correct(program: Command): void {
         let targetDates: string[];
 
         if (options.all) {
-          targetDates = getUncorrectedDates();
+          targetDates = await getUncorrectedDates();
           if (targetDates.length === 0) {
             ui.warn("No uncorrected days found.");
             return;
           }
         } else {
           const date = options.date ?? getTodayDateString();
-          const dayFile = getDayFile(date);
+          const dayFile = await getDayFile(date);
 
           if (dayFile.entries.length === 0) {
             ui.warn(`No entries found for ${date}.`);
@@ -231,7 +233,7 @@ async function correctDay(
   model: string,
   url: string,
 ): Promise<void> {
-  const dayFile = getDayFile(date);
+  const dayFile = await getDayFile(date);
   if (dayFile.entries.length === 0) return;
 
   const combinedText = dayFile.entries
@@ -243,7 +245,7 @@ async function correctDay(
     const heading = dayFile.title
       ? `# ${date} - ${dayFile.title}`
       : `# ${date}`;
-    setCorrectedNarrative(date, `${heading}\n\n${narrative}`);
+    await setCorrectedNarrative(date, `${heading}\n\n${narrative}`);
   } catch (e) {
     ui.error(`Failed to correct ${date}: ${(e as Error).message}`);
   }
